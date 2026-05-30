@@ -1,6 +1,6 @@
 "use server";
 import path from "path";
-const process = require("process");
+import process from "process";
 import fs from "fs/promises";
 
 async function submitFeedback(formData: FormData) {
