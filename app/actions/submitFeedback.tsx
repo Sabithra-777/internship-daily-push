@@ -34,69 +34,24 @@
 // }
 
 'use server'
-import fs from 'fs/promises';
-import path from 'path';
+import pool from '../lib/db';
 import { revalidatePath } from 'next/cache';
-async function submitFeedbackForm(formData:FormData){
-    // extract username, email, feedback
-    const username = String(formData.get("username") ?? "").replace(/[\r\n]/g, "");
-    const email = String(formData.get("email") ?? "").replace(/[\r\n]/g, "");
-    const feedback = String(formData.get("feedback") ?? "").replace(/[\r\n]/g, "");
 
-    console.log("feedback form received for user:", username);
+async function submitFeedbackForm(formData: FormData) {
+    const username = String(formData.get('username') ?? '');
+    const email = String(formData.get('email') ?? '');
+    const feedback = String(formData.get('feedback') ?? '');
 
-    const newFeedback = {
-        username,
-        email,
-        feedback
-    }
-    // find the path of the file (fixed path, no user input involved)
-    const dataDir = path.join(process.cwd(), "app", "data");
-    const filePath = path.resolve(dataDir, "feedbacks.json");
-    if (!filePath.startsWith(dataDir)) throw new Error("Invalid file path");
-
-    await new Promise((resolve) => {
-        setTimeout(resolve, 1500);
-    })
-   
-    // now read the file and get the file data
-    const fileData = await fs.readFile(filePath, 'utf-8');
-
-    // convert this fileData to JS object 
-    const jsdata = fileData ? JSON.parse(fileData) : [];
-
-    // push the feedback form to the jsdata
-    jsdata.push(newFeedback);
-
-    // need to write the updated file data to the file
-    await fs.writeFile(filePath, JSON.stringify(jsdata, null, 2));
+    await pool.query(
+        'INSERT INTO feedbacks (username, email, feedback) VALUES ($1, $2, $3)',
+        [username, email, feedback]
+    );
     revalidatePath('/feedback');
-
-    console.log("Feedback data saved successfully");
-
-    // we need to read the file
-    // get the existing file data
-    // append the new form data
-    // save the file or write the data to the file
-    // in JSON format 
-    // prints message, data saved
 }
 
-export async function getAllFeedbacks(){
-    const dataDir = path.join(process.cwd(), "app", "data");
-    const filePath = path.resolve(dataDir, "feedbacks.json");
-    if (!filePath.startsWith(dataDir)) throw new Error("Invalid file path");
-    
-    const rawData = await fs.readFile(filePath, 'utf-8');
-
-    // convert rawdata
-    const fileData = rawData ? JSON.parse(rawData) : [];
-
-    return fileData;
-
-    // read the file data
-    // convert it to JS array of objects
-    // return the data
+export async function getAllFeedbacks() {
+    const result = await pool.query('SELECT * FROM feedbacks ORDER BY id DESC');
+    return result.rows;
 }
 
 export default submitFeedbackForm;

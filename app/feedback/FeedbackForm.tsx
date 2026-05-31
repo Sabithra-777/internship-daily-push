@@ -1,49 +1,32 @@
-"use client";
+'use client'
+import { useFormStatus } from 'react-dom';
+import submitFeedbackForm from '../actions/submitFeedback';
 
-import { useTransition } from "react";
-import { submitFeedback } from "../actions/submitFeedback";
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <button type="submit" disabled={pending}>
+            {pending ? 'Submitting...' : 'Submit Feedback'}
+        </button>
+    );
+}
 
 export default function FeedbackForm() {
-  const [isPending, startTransition] = useTransition();
+    return (
+        <form action={submitFeedbackForm}>
+            <label htmlFor="username">Username: </label>
+            <input type="text" name="username" id="username" placeholder="Enter your username" />
+            <br /><br />
 
-  const handleSubmit = (formData: FormData) => {
-    startTransition(async () => {
-      await submitFeedback(formData);
-      // Keep submitting state for at least 2 seconds
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    });
-  };
+            <label htmlFor="email">Email: </label>
+            <input type="email" name="email" id="email" placeholder="Enter your email" />
+            <br /><br />
 
-  return (
-    <form action={handleSubmit}>
-      <label htmlFor="name">Name</label>
-      <input type="text" name="name" id="name" placeholder="Your name" />
-      <br />
-      <br />
+            <label htmlFor="feedback">Feedback: </label>
+            <textarea name="feedback" id="feedback" placeholder="Write your feedback" rows={4} cols={40}></textarea>
+            <br /><br />
 
-      <label htmlFor="email">Email</label>
-      <input
-        type="email"
-        name="email"
-        id="email"
-        placeholder="you@example.com"
-      />
-      <br />
-      <br />
-
-      <label htmlFor="rating">Rating (1-5)</label>
-      <input type="number" name="rating" id="rating" min={1} max={5} />
-      <br />
-      <br />
-
-      <label htmlFor="comments">Comments</label>
-      <textarea name="comments" id="comments" rows={4} cols={40}></textarea>
-      <br />
-      <br />
-
-      <button type="submit" disabled={isPending}>
-        {isPending ? "Submitting..." : "Submit Feedback"}
-      </button>
-    </form>
-  );
+            <SubmitButton />
+        </form>
+    );
 }

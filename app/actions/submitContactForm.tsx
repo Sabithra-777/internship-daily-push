@@ -40,52 +40,27 @@
 // // server action: Users post feedback with instant UI updates
 
 'use server'
-import path from 'path';
-import fs from 'fs/promises';
-import { revalidatePath } from "next/cache";
+import pool from '../lib/db';
+import { revalidatePath } from 'next/cache';
 
-async function submitContactForm(formData: FormData){
-    // console.log("formData: ", formData);
-    
-    // lets define the file path
-    // cwd - current working directory
-    const name =  formData.get("fullName");
-    const userEmail = formData.get("email");
-    const userMessage = formData.get("message");
-    const obj = {
-        fullName:name,
-        email: userEmail,
-        message: userMessage
-    }
-    const dataDir = path.join(process.cwd(), "app", "data");
-    const filePath = path.resolve(dataDir, "users.json");
-    if (!filePath.startsWith(dataDir)) throw new Error("Invalid file path");
-    
-    // read the file
-    const fileData = await fs.readFile(filePath, 'utf-8');
+async function submitContactForm(formData: FormData) {
+    const name = String(formData.get('fullName') ?? '');
+    const userEmail = String(formData.get('email') ?? '');
+    const userMessage = String(formData.get('message') ?? '');
 
-    console.log("fileData: ", fileData);
-
-    // lets convert the file data to JS object
-    const data = fileData ? JSON.parse(fileData) : []; 
-    data.push(obj);
-    console.log("Parsed Data: ", data);
-
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    await pool.query(
+        'INSERT INTO users (fullname, email, message) VALUES ($1, $2, $3)',
+        [name, userEmail, userMessage]
+    );
     revalidatePath('/contact');
-    console.log("Data saved successfully");
-
 }
+
+export async function getDetails() {
+    const result = await pool.query('SELECT * FROM users ORDER BY id DESC');
+    return result.rows;
+}
+
 export default submitContactForm;
-
-export async function getDetails(){
-    const dataDir = path.join(process.cwd(), "app", "data");
-    const filePath = path.resolve(dataDir, "users.json");
-    if (!filePath.startsWith(dataDir)) throw new Error("Invalid file path");
-    const fileData = await fs.readFile(filePath, "utf-8");
-    
-    return fileData ? JSON.parse(fileData) : [];
-}
 
 //  Blog: fetching static data with dynamic routes
 // Porfolio site : Multipage porfolio site (having diff sections )
