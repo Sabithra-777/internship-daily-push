@@ -1,6 +1,6 @@
 'use client'
 import { useFormStatus } from 'react-dom';
-import submitFeedbackForm from '../actions/submitFeedback';
+import submitFeedbackForm3 from '../actions/submitFeedback3';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -11,9 +11,9 @@ function SubmitButton() {
     );
 }
 
-export default function FeedbackForm({ avgRating }: { avgRating?: number }) {
+export default function FeedbackForm() {
     return (
-        <form action={submitFeedbackForm}>
+        <form action={submitFeedbackForm3}>
             <label htmlFor="username">Username: </label>
             <input type="text" name="username" id="username" placeholder="Enter your username" required />
             <br /><br />
@@ -22,22 +22,18 @@ export default function FeedbackForm({ avgRating }: { avgRating?: number }) {
             <input type="email" name="email" id="email" placeholder="Enter your email" required />
             <br /><br />
 
-            <label htmlFor="rating">Rating (1–5): </label>
-            <select name="rating" id="rating" required>
-                <option value="">-- Select --</option>
-                {[1, 2, 3, 4, 5].map(n => (
-                    <option key={n} value={n}>{'⭐'.repeat(n)} ({n})</option>
-                ))}
-            </select>
-            <br /><br />
-
             <label htmlFor="feedback">Feedback: </label>
             <textarea name="feedback" id="feedback" placeholder="Write your feedback" rows={4} cols={40}></textarea>
             <br /><br />
 
-            {avgRating !== undefined && (
-                <p>⭐ Average Rating: <strong>{avgRating} / 5</strong></p>
-            )}
+            <label htmlFor="rating">Rating: </label>
+            <select name="rating" id="rating" required>
+                <option value="">-- Select --</option>
+                {[1, 2, 3, 4, 5].map(n => (
+                    <option key={n} value={n}>{'⭐'.repeat(n)} ({n}/5)</option>
+                ))}
+            </select>
+            <br /><br />
 
             <SubmitButton />
         </form>
