@@ -41,10 +41,11 @@ async function submitFeedbackForm(formData: FormData) {
     const username = String(formData.get('username') ?? '');
     const email = String(formData.get('email') ?? '');
     const feedback = String(formData.get('feedback') ?? '');
+    const rating = Number(formData.get('rating') ?? 0);
 
     await pool.query(
-        'INSERT INTO feedbacks (username, email, feedback) VALUES ($1, $2, $3)',
-        [username, email, feedback]
+        'INSERT INTO feedbacks (username, email, feedback, rating) VALUES ($1, $2, $3, $4)',
+        [username, email, feedback, rating]
     );
     revalidatePath('/feedback');
 }
@@ -52,6 +53,11 @@ async function submitFeedbackForm(formData: FormData) {
 export async function getAllFeedbacks() {
     const result = await pool.query('SELECT * FROM feedbacks ORDER BY id DESC');
     return result.rows;
+}
+
+export async function getAvgRating() {
+    const result = await pool.query('SELECT ROUND(AVG(rating)::numeric, 1) AS avg_rating FROM feedbacks');
+    return result.rows[0].avg_rating;
 }
 
 export default submitFeedbackForm;

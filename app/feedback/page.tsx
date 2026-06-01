@@ -44,26 +44,18 @@
 //   );
 // }
 
-import { getAllFeedbacks } from '../actions/submitFeedback';
+import { getAllFeedbacks, getAvgRating } from '../actions/submitFeedback';
 import FeedbackForm from './FeedbackForm';
+import CustomerReview from './CustomerReview';
 
 export default async function FeedbackPage() {
-    const feedbacks = await getAllFeedbacks();
+    const [feedbacks, avgRating] = await Promise.all([getAllFeedbacks(), getAvgRating()]);
     return (
         <>
-            <h1>User Feedback Form</h1>
-            <FeedbackForm />
+            <h1>Product Reviews</h1>
+            <FeedbackForm avgRating={avgRating} />
             <hr />
-            {
-                feedbacks.map((feedback: any, index: number) => (
-                    <div key={index}>
-                        <h2>{feedback.username}</h2>
-                        <h3>{feedback.email}</h3>
-                        <p>{feedback.feedback}</p>
-                        <hr />
-                    </div>
-                ))
-            }
+            <CustomerReview reviews={feedbacks} />
         </>
     );
 }
